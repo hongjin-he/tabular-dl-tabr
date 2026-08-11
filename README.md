@@ -1,3 +1,30 @@
+## 🇨🇳 中文说明 / Bilingual Notes (added by [@hongjin-he](https://github.com/hongjin-he))
+
+> This is a fork of [yandex-research/tabular-dl-tabr](https://github.com/yandex-research/tabular-dl-tabr) (MIT License, Copyright (c) 2023 Authors of "TabR"). All credit for the model and paper goes to the original authors. This fork adds a bilingual (EN/中文) walkthrough and a lightweight, dependency-free illustration of the retrieval-augmented idea applied to a quant-style tabular task. It does not modify the official training pipeline.
+
+### 這是什麼 / What is TabR
+
+TabR 把「檢索增強」（retrieval-augmented，通常只在 NLP/RAG 語境下討論）帶進了表格深度學習：模型在做預測時，不只看當前樣本的特徵，還會從訓練集中檢索出**相似樣本**，並用一個帶注意力機制的模組把「相似樣本的標籤」融合進最終預測——本質上是把 k 近鄰（kNN）的思想用可微分、可端到端訓練的方式接入神經網路。
+
+論文（NeurIPS 2023 / 後續版本）顯示 TabR 是少數在標準表格 benchmark 上能穩定打贏梯度提升樹（GBDT）的深度學習方法之一,但因為訓練管線依賴 faiss 做近鄰檢索、配置系統較重（`bin/go.py` + JSON config 驅動實驗）,在西方教程/部落格圈子裡的討論深度遠不及其技術新穎度。
+
+### 量化應用場景 / Where this fits quant research
+
+「檢索相似樣本輔助預測」對量化研究直覺上非常貼切——這正是**類比定價 / 相似歷史情境（analog forecasting）**的思路：
+- **相似股票/相似市場狀態檢索**：預測某支股票的收益時，模型自動找出歷史上「因子暴露相似」的股票或時間點，並參考它們的真實收益做加權
+- **另類數據冷啟動**：新上市標的/低頻因子數據不足時，檢索機制能借用相似樣本的信息，緩解小樣本問題
+- **可解釋性附帶收益**：因為預測顯式依賴「被檢索到的相似樣本」，比純黑盒 MLP 更容易向研究/風控團隊解釋「模型為什麼這樣預測」
+
+### 這個 fork 加了什麼 / What this fork adds
+
+官方管線（faiss + micromamba + 多階段 config）對「先直覺理解機制」的門檻較高。這裡在 [`quant_demo/`](./quant_demo) 提供一個**不依賴 faiss、純 PyTorch 實現**的簡化版檢索增強回歸器，用來在合成的截面因子數據上直觀展示「檢索增強 vs. 純 MLP」的差異。這不是論文結果的復現，只是機制的最小可運行說明；要復現論文結果，請遵循下方原始 README 的完整管線。
+
+```bash
+python quant_demo/retrieval_augmented_factor_demo.py
+```
+
+---
+*Original README follows below.*
 # TabR: Unlocking the Power of Retrieval-Augmented Tabular Deep Learning<!-- omit in toc -->
 
 > [!IMPORTANT]
